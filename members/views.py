@@ -47,5 +47,5 @@ class ProfileCreateView(CreateView):
 class ProfileEditView(UpdateView):
     model = Profile
     template_name = 'registration/edit_profile.html'
-    fields = ['bio','profile_picture', ]
+    form_class = EditProfileForm
     success_url = reverse_lazy('shop:shop')
