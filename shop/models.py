@@ -49,3 +49,13 @@ class Product(models.Model):
 
     def get_absolute_url(self):
         return reverse('shop:index')
+
+
+class Comment(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    name = models.ForeignKey(User,on_delete=models.CASCADE)
+    body = models.TextField()
+    date_added = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.date_added)

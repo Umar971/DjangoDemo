@@ -45,6 +45,7 @@
           <!-- DETAILS TABS-->
           <ul class="nav nav-tabs border-0" id="myTab" role="tablist">
             <li class="nav-item"><a class="nav-link active" id="description-tab" data-toggle="tab" href="#description" role="tab" aria-controls="description" aria-selected="true">Description</a></li>
+            <li class="nav-item"><a class="nav-link" id="reviews-tab" data-toggle="tab" href="#reviews" role="tab" aria-controls="reviews" aria-selected="false">Comments</a></li>
             {%if user.is_authenticated%}
               {%if user.id == product.owner.pk%}
                 <li class="nav-item"><a class="nav-link"  href="{%url 'shop:product_update' product.pk%}" aria-controls="reviews" aria-selected="false">Edit Product</a></li>
@@ -59,8 +60,68 @@
                 <p class="text-muted text-small mb-0">{{product.description}}</p>
               </div>
             </div>
+            <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+              <div class="p-4 p-lg-5 bg-white">
+                <div class="row">
+                {%if user.is_authenticated%}
+                  {%if user.id != product.owner.pk%}
+                  <div class="col-lg-8">
+                    <form action='{%url "shop:create_comment" product.pk%}' method="POST">
+                    {% csrf_token %}
+                          <div class="form-group">
+                            <label for="exampleFormControlTextarea1">Add Your Comment</label>
+                            <div class="col-sm-10">
+                              <textarea class="form-control" name='bodyofcomment' onkeyup="textAreaAdjust(this)" style="overflow:hidden; min-height: 60px;" id="exampleFormControlTextarea1" rows="3"></textarea>
+                            </div>
+                          </div>
+                          <div class="form-group row">
+                            <div class="col-sm-10">
+                              <button class="btn btn-primary mb-5" type="submit">Add comment</button>
+                            </div>
+                          </div>
+                    </form>
+                  </div>
+                    {%endif%}
+                  {%endif%}
+                
+
+                  <div class="col-lg-8">
+                  {%if product.comment_set.all%}
+                  {% for comment in product.comment_set.all %}
+                    <div class="media mb-3">
+                      {% if comment.name.profile.profile_picture %}
+                    <img class="rounded-circle" src="{{comment.name.profile.profile_picture.url}}" alt="" width="50">
+                      {%else%}
+                    <img class="rounded-circle" src="{% static 'img/default_photo.jpg' %}" alt="" width="50">
+                      {%endif%}
+                      <div class="media-body ml-3">
+                        <h6 class="mb-0 text-uppercase">{{comment.name.first_name}} {{comment.name.last_name}}</h6>
+                        <span class="small text-muted mb-0 text-uppercase">{{comment.date_added}}</span>
+                        <span><a href="{%url 'shop:update_comment' comment.pk%}" class="btn btn-warning btn-sm float-right mx-2">Edit</a></span>
+                        <span><a class="btn btn-danger btn-sm float-right mx-2" href="{%url 'shop:delete_comment' comment.pk%}">Delete</a></span>
+                        <hr>
+                        <p class="text-small mb-0 text-muted">{{comment.body}}</p>
+                      </div>
+                    </div>
+                  {% endfor %}
+                  {%else%}
+                    <p>No comments yet...</p>
+                  {%endif%}
+                   </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
 
+
+          <script type="text/javascript">
+            function textAreaAdjust(element) {
+              element.style.height = "1px";
+              element.style.height = (25+element.scrollHeight)+"px";
+            }
+          </script>
+        
             {% endblock body %}

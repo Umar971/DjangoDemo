@@ -1,0 +1,23 @@
+{%extends 'shop/shopbase.html'%}
+
+{%block body%}
+
+<div class="container">
+            {%if user.is_authenticated%}
+
+	    <h1>Edit Comment...</h1>
+        <br/>
+        <br/>
+        <div class="form-group">
+            <form method='POST' enctype="multipart/form-data" >
+                {% csrf_token %}
+                {{form.as_p}}
+                <button type='submit' class='btn btn-secondary btn-sm'>Update Comment</button>
+                <a href="{%url 'shop:index'%}" class="btn btn-secondary btn-sm">Cancel</a>
+           </form>
+  		</div>
+  		          {%else%}
+            <h1>Login to access</h1>
+          {%endif%}
+</div>
+    {% endblock %}

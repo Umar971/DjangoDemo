@@ -52,14 +52,14 @@
                 <li class="nav-item">
                   <!-- Link--><a class="nav-link" id='add_product' href="{% url 'shop:create_product' %}">Add Product</a>
                 </li>
-{%endif%}       
                 <li class="nav-item dropdown"><a class="nav-link dropdown-toggle" id="pagesDropdown" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Profile</a>
                   <div class="dropdown-menu mt-3" aria-labelledby="pagesDropdown"><a class="dropdown-item border-0 transition-link" href="{%url 'members:edit_settings'%}">Edit Settings</a>
-{% if request.user.profile %}
+  {% if request.user.profile %}
                     <a class="dropdown-item border-0 transition-link" href="{%url 'members:edit_profile' request.user.profile.id%}">Edit Profile</a>
                     <a class="dropdown-item border-0 transition-link" href="{%url 'members:show_profile'%}">Show Profile</a></div>
-{%else%}
+  {%else%}
                     <a class="dropdown-item border-0 transition-link" href="{%url 'members:create_profile'%}">Create Profile</a></div>
+  {%endif%}       
 {%endif%}       
 
                 </li>
