@@ -97,9 +97,11 @@
                       <div class="media-body ml-3">
                         <h6 class="mb-0 text-uppercase">{{comment.name.first_name}} {{comment.name.last_name}}</h6>
                         <span class="small text-muted mb-0 text-uppercase">{{comment.date_added}}</span>
+                        {%if user.id == comment.name.id%}
                         <span><a href="{%url 'shop:update_comment' comment.pk%}" class="btn btn-warning btn-sm float-right mx-2">Edit</a></span>
                         <span><a class="btn btn-danger btn-sm float-right mx-2" href="{%url 'shop:delete_comment' comment.pk%}">Delete</a></span>
                         <hr>
+                        {%endif%}
                         <p class="text-small mb-0 text-muted">{{comment.body}}</p>
                       </div>
                     </div>
