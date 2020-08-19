@@ -1,0 +1,53 @@
+{% extends 'shop/shopbase.html' %}
+{% load static %}
+    {% block body %}    
+    <div class="row">
+        <div class="col-lg-4 col-md-4">
+    {%if request.user.profile.profile_picture.url%}
+            <img  src="{{request.user.profile.profile_picture.url}} "
+            alt="Profile Picture"  style="width:300px; height:300px;" class="rounded img-responsive mt-5" />
+    {%else%}
+
+            <img  src="{% static '/blog/images/default_profile_pic.png' %}"
+            alt="Profile Picture"  style="width:300px; height:300px;" class="rounded img-responsive mt-5" />
+        </div>
+    {%endif%}
+        <div class="col-lg-12 col-md-4">
+            <blockquote>
+                <h3>{{request.user.first_name.capitalize}} {{request.user.last_name.capitalize}}</h3> <small><cite title="Source Title">{{request.user.profile.bio}}  <i class="glyphicon glyphicon-map-marker"></i></cite></small>
+            </blockquote>
+<h4>
+
+            {%if request.user.email%}
+
+            <a href="https://www.google.com/intl/en-GB/gmail/about/" target="_blank" class="text-decoration-none">     <i class="fa fa-envelope-o"></i> {{request.user.email}}</a> |
+            {%endif%}
+            {%if request.user.profile.facebook_url%}
+            
+            <a href="{{request.user.profile.facebook_url}}"  target="_blank" class="text-decoration-none"><i class="fa fa-facebook-square"></i> Facebook</a> |
+            
+            {%endif%}
+            {%if request.user.profile.linked_in_url%}
+            
+            <a href="{{request.user.profile.linked_in_url}}" target="_blank" class="text-decoration-none"><i class="fa fa-linkedin-square"></i> Linkedin</a>| 
+            
+            {%endif%}
+            {%if request.user.profile.instagram_url%}
+            
+            <a href="{{request.user.profile.instagram_url}}" target="_blank" class="text-decoration-none"><i class="fa fa-instagram"></i> Instagram</a>|
+            
+            {%endif%}
+            {%if request.user.profile.twitter_url%}
+            
+            <a href="{{request.user.profile.twitter_url}}" class="text-decoration-none"  target="_blank"> <i class="fa fa-twitter-square"></i> Twitter </a>|
+            
+            {%endif%}
+            {%if request.user.profile.website_url%}
+            
+            <a href="{{request.user.profile.website_url}}"  class="text-decoration-none" target="_blank"> <i class="fa fa-globe"></i> Webstie</a>
+                <br/>
+</h4>
+            {%endif%}
+        </div>
+    </div>
+    {% endblock  %}

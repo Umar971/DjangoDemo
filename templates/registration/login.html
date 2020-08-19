@@ -1,0 +1,22 @@
+{% extends 'shop/shopbase.html' %}
+{% block title %} Login Page {% endblock  %}
+    {% block body %}
+    <div class="container">
+        {%if not user.is_authenticated%}
+
+            <h1>Login...</h1>
+            <br/>
+            <br/>
+            <div class="form-group">
+                <form  method='POST'>
+                    {% csrf_token %}
+                    {{form.as_p}}
+                    <button type='submit' class='btn btn-secondary btn-sm'>Login</button>
+                    <a type='submit' class='btn btn-secondary btn-sm' href="{%url 'members:register'%}">Sign up</a>
+
+            </div>
+        {%else%}
+            <h4>You are already logged in...!!!</h4>
+        {%endif%}
+    </div>
+    {% endblock  %}

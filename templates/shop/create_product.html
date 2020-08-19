@@ -1,0 +1,36 @@
+{%extends 'shop/shopbase.html'%}
+
+{%block body%}
+<div class="container">
+            {%if user.is_authenticated%}
+
+        <h1>Add Product...</h1>
+        <br/>
+        <br/>
+        <div class="form-group">
+            <form method='POST' enctype="multipart/form-data" >
+                {% csrf_token %}
+                {{form.as_p}}
+                <button type='submit' class='btn btn-secondary btn-sm'>Add Product</button>
+                <a href="{%url 'shop:index'%}" class="btn btn-secondary btn-sm">Cancel</a>
+           </form>
+
+        </div>
+                  {%else%}
+            <h1>Login to access</h1>
+          {%endif%}
+	</div>
+{% endblock %}
+
+      {% block js %}
+        <script>
+                var user_id = {{user.id}} ;
+                document.getElementById('user_id').value = user_id;
+
+			// document.querySelector('.active').classList.remove('active')
+   //          document.getElementById("add_product").className += ' active';
+   //                // Add active class to the current button (highlight it)
+            
+      </script>
+
+      {% endblock js %}

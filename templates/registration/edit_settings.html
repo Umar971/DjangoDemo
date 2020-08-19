@@ -1,0 +1,19 @@
+{% extends 'shop/shopbase.html' %}
+{% block title %} Edit Profile Page {% endblock  %}
+    {% block body %}
+        {%if user.is_authenticated%}
+
+            <h1>Edit Your Settings...</h1>
+            <br/>
+            <br/>
+            <div class="form-group">
+                <form method='POST'>
+                    {% csrf_token %}
+                    {{form.as_p}}
+                    <button type='submit' class='btn btn-secondary btn-sm'>Update Settings</button>
+
+            </div>
+        {%else%}
+            <h4>You are not logged in...!!!</h4>
+        {%endif%}
+    {% endblock  %}
