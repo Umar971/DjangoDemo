@@ -3,7 +3,6 @@
 {%block body%}
 <div class="container">
             {%if user.is_authenticated%}
-
         <h1>Add Product...</h1>
         <br/>
         <br/>
@@ -26,6 +25,9 @@
         <script>
                 var user_id = {{user.id}} ;
                 document.getElementById('user_id').value = user_id;
+
+                var serial_num = '{{serial_num}}'
+                document.getElementById('serial_num').value = serial_num;
 
 			// document.querySelector('.active').classList.remove('active')
    //          document.getElementById("add_product").className += ' active';

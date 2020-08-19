@@ -1,4 +1,4 @@
-from shop.models import Product
+from shop.models import Product, Category
 from django.shortcuts import render
 from django.http import HttpResponse
 from shop.forms import AddProductForm, EditProductForm
@@ -14,6 +14,12 @@ class ProductCreateView(CreateView):
 	form_class = AddProductForm
 	template_name = 'shop/create_product.html'
 	success_url = reverse_lazy('shop:shop')
+
+	def get_context_data(self,*args, **kwargs):
+		serial_num = Product.ran_gen_serial_num()
+		context = super(ProductCreateView,self).get_context_data(*args,**kwargs)
+		context['serial_num'] = serial_num
+		return context
 
 
 class ProductDetailView(DetailView):

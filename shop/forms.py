@@ -12,7 +12,7 @@ for cat in choices:
 class AddProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ('title','price', 'description', 'stock' ,'owner', 'category' ,'discount_price', 'product_image')
+        fields = ('title','price', 'description', 'stock' ,'owner', 'category' ,'discount_price', 'product_image', 'serial_number')
 
         widgets = {
             'title' : forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter title of your Product here'}),
@@ -23,13 +23,14 @@ class AddProductForm(forms.ModelForm):
             'category' : forms.Select(choices= choice_list, attrs={'class': 'form-control'}),
             'stock' : forms.NumberInput(attrs={'class': 'form-control'}),
             'description' : forms.Textarea(attrs={'class': 'form-control'}),
+            'serial_number' : forms.TextInput(attrs={'class': 'form-control','value':'', 'id':'serial_num', 'type':'hidden'}),
             
         }
 
 class EditProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ('title','price', 'description', 'stock' ,'owner', 'category' ,'discount_price', 'product_image')
+        fields = ('title','price', 'description', 'stock' ,'owner', 'category' ,'discount_price', 'product_image', 'serial_number')
 
         widgets = {
             'title' : forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter title of your Product here'}),
