@@ -13,5 +13,10 @@ urlpatterns = [
 	path('create_comment/<int:pk>', views.CommentCreateView, name='create_comment'),
 	path('update_comment/<int:pk>', views.CommentUpdateView.as_view(), name='update_comment'),
 	path('delete_comment/<int:pk>', views.CommentDeleteView.as_view(), name='delete_comment'),
+	path('add_to_cart/<int:pk>', views.add_to_cart, name='add_to_cart'),
+	path('remove_from_cart/<int:pk>', views.remove_from_cart, name='remove_from_cart'),
+	path('empty_cart/', views.empty_cart, name='empty_cart'),
+	path('remove_product_from_cart/<int:pk>', views.remove_single_item_from_cart, name='remove_product_from_cart'),
+	path('order_summary/', views.OrderSummaryView.as_view(), name='order_summary'),
 
 ]

@@ -33,6 +33,21 @@
         <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
         <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]-->
   </head>
+
+      <div>
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        {% endfor %}
+    {% endif %}
+    </div>
+
+
   <body>
     <div class="page-holder">
       <!-- navbar-->
@@ -65,7 +80,9 @@
                 </li>
               </ul>
               <ul class="navbar-nav ml-auto">               
-                <li class="nav-item"><a class="nav-link" href="cart.html"> <i class="fas fa-dolly-flatbed mr-1 text-gray"></i>Cart<small class="text-gray">(2)</small></a></li>
+{% if request.user.is_authenticated %}
+                <li class="nav-item"><a class="nav-link" href="{%url 'shop:order_summary'%}"> <i class="fas fa-dolly-flatbed mr-1 text-gray"></i>Cart<small class="text-gray">(2)</small></a></li>
+{%endif%}       
 {% if not request.user.is_authenticated %}
                 <li class="nav-item"><a class="nav-link" href="{%url 'members:login'%}"> <i class="fas fa-user-alt mr-1 text-gray"></i>Login</a></li>
 {%else%}
