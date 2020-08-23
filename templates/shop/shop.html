@@ -96,11 +96,7 @@
                         <div class="badge text-white badge-"></div><a class="d-block"><img class="img-fluid w-100" style="width: 150px; height: 200px;"  src="{{product.product_image.url}}" alt="Could not load image"></a>
                         <div class="product-overlay">
                           <ul class="mb-0 list-inline">
-                          {%if request.user.is_authenticated%}
                             <li class="list-inline-item m-0 p-0"><a class="btn btn-sm btn-dark" href="{{product.get_add_to_cart_url}}">Add to cart</a></li>
-                          {%else%}
-                           <li class="list-inline-item m-0 p-0"><a class="btn btn-sm btn-dark" href="{%url 'members:login'%}">Add to cart</a></li>
-                          {%endif%}
                             <li class="list-inline-item mr-0"><a class="btn btn-sm btn-outline-dark" href="#productView" data-toggle="modal"><i class="fas fa-expand"></i></a></li>
                           </ul>
                         </div>

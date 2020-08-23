@@ -1,0 +1,13 @@
+{%extends 'shop/shopbase.html'%}
+
+{%block body%}
+
+	<p>CartCount = {{cart_items.count}}</p> 
+	{%if cart_items.product%}
+		true <br>
+		{%for item in cart_items%}
+			{{item.product.title}}
+		{%endfor%}
+	{%endif%}
+
+{%endblock body%}

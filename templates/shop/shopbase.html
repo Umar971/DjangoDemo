@@ -79,10 +79,12 @@
 
                 </li>
               </ul>
-              <ul class="navbar-nav ml-auto">               
-{% if request.user.is_authenticated %}
-                <li class="nav-item"><a class="nav-link" href="{%url 'shop:order_summary'%}"> <i class="fas fa-dolly-flatbed mr-1 text-gray"></i>Cart<small class="text-gray">(2)</small></a></li>
-{%endif%}       
+              <ul class="navbar-nav ml-auto">  
+{% if request.user.is_authenticated %}             
+                <li class="nav-item"><a class="nav-link" href="{%url 'shop:order_summary'%}"> <i class="fas fa-dolly-flatbed mr-1 text-gray"></i>Cart<small class="text-gray">({{count_items}})</small></a></li>            
+{%else%}
+                <li class="nav-item"><a class="nav-link" href="{%url 'shop:order_summary_session'%}"> <i class="fas fa-dolly-flatbed mr-1 text-gray"></i>Cart<small class="text-gray">({{count_items}})</small></a></li>
+{%endif%}
 {% if not request.user.is_authenticated %}
                 <li class="nav-item"><a class="nav-link" href="{%url 'members:login'%}"> <i class="fas fa-user-alt mr-1 text-gray"></i>Login</a></li>
 {%else%}
