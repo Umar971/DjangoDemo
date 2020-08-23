@@ -1,4 +1,4 @@
-from shop.models import Product, Category, Comment, OrderItem, Order
+from shop.models import Product, Category, Comment, OrderItem, Order, Address
 from carts.models import Carts, CartsItem
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
@@ -303,10 +303,32 @@ class CheckoutView(View):
 
     def post(self, *args, **kwargs):
         form = CheckoutForm(self.request.POST or None)
-        if form.is_valid():
-            print(form.cleaned_data)
-            print("valid Form")
-            return HttpResponse("vlaid")
-        else:
-            print("invalid Form")
-            return HttpResponse("invlaid")
+        try:
+            order = Order.objects.get(user=self.request.user, ordered=False)
+            if form.is_valid():
+                shipping_address = form.cleaned_data.get("shipping_address")
+                shipping_address2 = form.cleaned_data.get("shipping_address2")
+                shipping_country = form.cleaned_data.get("shipping_country")
+                shipping_zip = form.cleaned_data.get("shipping_zip")
+
+                address = Address(
+                    user = self.request.user,
+                    street_address = shipping_address, 
+                    apartment_address = shipping_address2,
+                    country = shipping_country, 
+                    zip = shipping_zip
+                    )
+                address.save()
+                order.shipping_address = address
+                order.save()
+                print('---------------------------')
+                print('address')
+                print(order.shipping_address)
+                print('---------------------------')
+                return redirect("shop:checkout")
+            else:
+                print("invalid Form")
+                return redirect("shop:checkout")
+        except ObjectDoesNotExist:
+            messages.info(self.request, "You do not have an active order")
+            return redirect("shop:order_summary")
