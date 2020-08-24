@@ -75,3 +75,9 @@ class CouponForm(forms.Form):
         'class': 'form-control',
         'placeholder': 'Promo code',
         }))
+
+
+
+
+class PaymentForm(forms.Form):
+    stripeToken = forms.CharField(required=False)

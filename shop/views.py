@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils import timezone
-from shop.forms import AddProductForm, EditProductForm, CouponForm
+from shop.forms import AddProductForm, EditProductForm, CouponForm, PaymentForm
 from django.views.generic import CreateView, ListView, DetailView, DeleteView, UpdateView, View
 from django.urls import reverse_lazy, reverse
 from .forms import CheckoutForm
@@ -338,14 +338,8 @@ class CheckoutView(View):
                     zip = shipping_zip
                     )
                 address.save()
-                print( "-------------")
-                print("Saved Address: " +str(address))
-                print( "-------------")
                 order.shipping_address = address
                 order.save()
-                print( "-------------")
-                print("order: "+str(order))
-                print( "-------------")
                 return redirect("shop:payment")
             else:
                 print("invalid Form")
@@ -362,22 +356,19 @@ class PaymentView(View):
             return render(self.request, "shop/payment.html", {'order':order})
         else:
             messages.warning(
-                self.request, "You have not added a billing address")
+                self.request, "You have not added a shipping address")
             return redirect("shop:checkout")
 
     def post(self, *args, **kwargs):
         order = Order.objects.get(user=self.request.user, ordered=False)
-        token = stripe.Token.create(card={ "number": "4242424242424242", "exp_month": 8, "exp_year": 2021, "cvc": "314",})
+        form = PaymentForm(self.request.POST)
+        # token = stripe.Token.create(card={ "number": "4242424242424242", "exp_month": 8, "exp_year": 2021, "cvc": "314",})
         amount = int(order.get_total() * 100)
         try:
-            print('+++++++++++++++++++++++')
-            print('charge creating')
-            print('+++++++++++++++++++++++')
-            print(token)
             charge = stripe.Charge.create(
                         amount=amount,  # cents
                         currency="usd",
-                        source=token
+                        source="tok_visa",
                     )
             print('+++++++++++++++++++++++')
             print('charge created')
@@ -400,40 +391,40 @@ class PaymentView(View):
             err = body.get('error', {})
             messages.warning(self.request, f"{err.get('message')}")
             return redirect("shop:shop")
-        except stripe.error.RateLimitError as e:
-          # Too many requests made to the API too quickly
-          messages.warning(self.request, "RateLimitError")
-          return redirect("shop:shop")
-        except stripe.error.InvalidRequestError as e:
-          # Invalid parameters were supplied to Stripe's API
-          messages.warning(self.request, "InvalidRequestError")
-          return redirect("shop:shop")
-        except stripe.error.AuthenticationError as e:
-          # Authentication with Stripe's API failed
-          # (maybe you changed API keys recently)
-          messages.warning(self.request, "AuthenticationError")
-          return redirect("shop:shop")
-        except stripe.error.APIConnectionError as e:
-          # Network communication with Stripe failed
-          messages.warning(self.request, "APIConnectionError")
-          return redirect("shop:shop")
-        except stripe.error.StripeError as e:
-          # Display a very generic error to the user, and maybe send
-          # yourself an email
-          messages.warning(self.request, "StripeError")
-          return redirect("shop:shop")
-        except Exception as e:
-          # Something else happened, completely unrelated to Stripe
-          messages.warning(self.request, "Something Went Wrong Please Try Again")
-          return redirect("shop:shop")
+        # except stripe.error.RateLimitError as e:
+        #   # Too many requests made to the API too quickly
+        #   messages.warning(self.request, "RateLimitError")
+        #   return redirect("shop:shop")
+        # except stripe.error.InvalidRequestError as e:
+        #   # Invalid parameters were supplied to Stripe's API
+        #   messages.warning(self.request, "InvalidRequestError")
+        #   return redirect("shop:shop")
+        # except stripe.error.AuthenticationError as e:
+        #   # Authentication with Stripe's API failed
+        #   # (maybe you changed API keys recently)
+        #   messages.warning(self.request, "AuthenticationError")
+        #   return redirect("shop:shop")
+        # except stripe.error.APIConnectionError as e:
+        #   # Network communication with Stripe failed
+        #   messages.warning(self.request, "APIConnectionError")
+        #   return redirect("shop:shop")
+        # except stripe.error.StripeError as e:
+        #   # Display a very generic error to the user, and maybe send
+        #   # yourself an email
+        #   messages.warning(self.request, "StripeError")
+        #   return redirect("shop:shop")
+        # except Exception as e:
+        #   # Something else happened, completely unrelated to Stripe
+        #   messages.warning(self.request, "Something Went Wrong Please Try Again")
+        #   return redirect("shop:shop")
 
 
 def get_coupon(request, code):
     try:
-        coupon = Coupon.objects.get(code=code, expiry_date__gt = timezone.now())
+        coupon = Coupon.objects.filter(code=code, expiry_date__gte = timezone.now())
         return coupon
     except ObjectDoesNotExist:
-        messages.info(request, "This coupon does not exist")
+        messages.warning(request, "This coupon does not exist")
         return redirect("shop:checkout")
 
 
@@ -446,13 +437,14 @@ class ApplyCouponView(View):
                 order = Order.objects.get(
                     user=self.request.user, ordered=False)
                 coupon = get_coupon(self.request, code)
-
-                if not coupon.percentage_discount:
+                if coupon:
+                    order.coupon = coupon[0]
+                    order.save()
+                    messages.success(self.request, "Successfully added coupon")
                     return redirect("shop:order_summary")
-                order.coupon = coupon
-                order.save()
-                messages.success(self.request, "Successfully added coupon")
-                return redirect("shop:order_summary")
+                else:
+                    messages.warning(self.request, "This coupon does not exist")
+                    return redirect("shop:order_summary")
             except ObjectDoesNotExist:
                 messages.info(self.request, "You do not have an active order")
                 return redirect("shop:order_summary")
