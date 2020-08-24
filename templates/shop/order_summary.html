@@ -20,7 +20,7 @@
           </div>
         </section>
         <section class="py-5">
-          <h2 class="h5 text-uppercase mb-4">Shopping cart <a href="{%url 'shop:empty_cart'%}">Empty Cart</a></h2>
+          <h2 class="h5 text-uppercase mb-4">Shopping cart</h2>
           <div class="row">
             <div class="col-lg-8 mb-4 mb-lg-0">
               <!-- CART TABLE-->
@@ -99,16 +99,27 @@
                 <div class="card-body">
                   <h5 class="text-uppercase mb-4">Cart total</h5>
                   <ul class="list-unstyled mb-0">
-                    <li class="d-flex align-items-center justify-content-between"><strong class="text-uppercase small font-weight-bold">Subtotal</strong><span class="text-muted small">{{order.get_total}}</span></li>
+                    <li class="d-flex align-items-center justify-content-between"><strong class="text-uppercase small font-weight-bold">Subtotal</strong><span class="text-muted small">${{order.get_total_without_coupon}}</span></li>
                     <li class="border-bottom my-2"></li>
-                    <li class="d-flex align-items-center justify-content-between mb-4"><strong class="text-uppercase small font-weight-bold">Total</strong><span>{{order.get_total}}</span></li>
+                    {%if discount%}
+                    <li class="d-flex align-items-center justify-content-between mb-4"><strong class="text-uppercase small font-weight-bold">Discount</strong><span>${{discount}}</span></li>
+                    {%endif%}
+                    <li class="d-flex align-items-center justify-content-between mb-4"><strong class="text-uppercase small font-weight-bold">Total</strong><span>${{order.get_total}}</span></li>
                     <li>
-                      <form action="#">
+                      
+                      <form action="{%url 'shop:apply_coupon'%}" method="POST">
+                        {%csrf_token%}
                         <div class="form-group mb-0">
-                          <input class="form-control" type="text" placeholder="Enter your coupon">
-                          <button class="btn btn-dark btn-sm btn-block" type="submit"> <i class="fas fa-gift mr-2"></i>Apply coupon</button>
+                          {%if not order.coupon%}
+                          <input class="form-control" type="text" name='code' placeholder="Enter your coupon">
+                          <button class="btn btn-dark text-white btn-sm btn-block" type="submit"> <i class="fas fa-gift mr-2"></i>Apply coupon</button>
+                          {%else%}
+                          <input disabled class="form-control" type="text" name='code' placeholder="Enter your coupon">
+                          <a href="#" class="btn btn-dark text-white btn-sm btn-block disabled" type="submit" role="button" aria-disabled="true"><i class="fas fa-gift mr-2"></i>Apply coupon</a>
+                          {%endif%}
                         </div>
                       </form>
+                      
                     </li>
                   </ul>
                 </div>

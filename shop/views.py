@@ -1,13 +1,13 @@
 import stripe
 from django.conf import settings
-from shop.models import Product, Category, Comment, OrderItem, Order, Address, Payment
+from shop.models import Product, Category, Comment, OrderItem, Order, Address, Payment, Coupon
 from carts.models import Carts, CartsItem
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils import timezone
-from shop.forms import AddProductForm, EditProductForm
+from shop.forms import AddProductForm, EditProductForm, CouponForm
 from django.views.generic import CreateView, ListView, DetailView, DeleteView, UpdateView, View
 from django.urls import reverse_lazy, reverse
 from .forms import CheckoutForm
@@ -100,8 +100,13 @@ class OrderSummaryView(View):
     def get(self, *args, **kwargs):
         try:
             order = Order.objects.get(user=self.request.user, ordered=False)
+            if order.coupon:
+                discount = order.get_total_without_coupon() - order.get_total()
+            else:
+                discount = 0
             context = {
-                'order': order
+                'order': order,
+                'discount': round(discount, 2)
             }
             return render(self.request, 'shop/order_summary.html', context)
         except ObjectDoesNotExist:
@@ -112,8 +117,9 @@ def OrderSummaryViewSession(request):
         try:
             cart = get_user_cart(request)
             object_cart = Carts.objects.get(id=cart.id)
+            
             context = {
-                'object': object_cart
+                'object': object_cart,
             }
             return render(request, 'carts/order_summary.html', context)
         except ObjectDoesNotExist:
@@ -295,9 +301,14 @@ class CheckoutView(View):
         try:
             order = Order.objects.get(user=self.request.user, ordered=False)
             form = CheckoutForm()
+            if order.coupon:
+                discount = order.get_total_without_coupon() - order.get_total()
+            else:
+                discount = 0
             context = {
                 'form': form,
                 'order': order,
+                'discount': round(discount, 2),
             }
             messages.info(self.request, "You are on placement of order page")
             return render(self.request, "shop/checkout.html", context)
@@ -415,3 +426,38 @@ class PaymentView(View):
           # Something else happened, completely unrelated to Stripe
           messages.warning(self.request, "Something Went Wrong Please Try Again")
           return redirect("shop:shop")
+
+
+def get_coupon(request, code):
+    try:
+        coupon = Coupon.objects.get(code=code, expiry_date__gt = timezone.now())
+        return coupon
+    except ObjectDoesNotExist:
+        messages.info(request, "This coupon does not exist")
+        return redirect("shop:checkout")
+
+
+class ApplyCouponView(View):
+    def post(self, *args, **kwargs):
+        form = CouponForm(self.request.POST or None)
+        if form.is_valid():
+            try:
+                code = form.cleaned_data.get('code')
+                order = Order.objects.get(
+                    user=self.request.user, ordered=False)
+                coupon = get_coupon(self.request, code)
+
+                if not coupon.percentage_discount:
+                    return redirect("shop:order_summary")
+                order.coupon = coupon
+                order.save()
+                messages.success(self.request, "Successfully added coupon")
+                return redirect("shop:order_summary")
+            except ObjectDoesNotExist:
+                messages.info(self.request, "You do not have an active order")
+                return redirect("shop:order_summary")
+        else:
+            messages.warning(self.request, "Invalid Promo code")
+            return redirect("shop:order_summary")
+
+

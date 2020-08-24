@@ -43,7 +43,7 @@
                   </div>
                 </div>
               <hr class="mb-4">
-              <button class="btn btn-primary btn-lg btn-block">Use Stripe For Payment</button>
+              <button class="btn btn-dark btn-lg btn-block ">Use Stripe For Payment</button>
 
             </form>
 
@@ -67,6 +67,10 @@
 	        <span class="text-muted">${{ order_item.get_final_price }}</span>
 	    </li>
 	    {% endfor %}
+	    {%if discount%}
+	    <li class="list-group-item d-flex justify-content-between"><strong class="text-uppercase small font-weight-bold">Discount</strong><span>${{discount}}</span></li>
+	    {%endif%}
+
 	    <li class="list-group-item d-flex justify-content-between">
 	        <span>Total (USD)</span>
 	        <strong>${{ order.get_total }}</strong>
