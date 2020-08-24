@@ -321,10 +321,6 @@ class CheckoutView(View):
         try:
             order = Order.objects.get(user=self.request.user, ordered=False)
             if form.is_valid():
-
-                print( "-------------")
-                print("valid form")
-                print( "-------------")
                 shipping_address = form.cleaned_data.get("shipping_address")
                 shipping_address2 = form.cleaned_data.get("shipping_address2")
                 shipping_country = form.cleaned_data.get("shipping_country")
@@ -342,7 +338,6 @@ class CheckoutView(View):
                 order.save()
                 return redirect("shop:payment")
             else:
-                print("invalid Form")
                 return redirect("shop:checkout")
         except ObjectDoesNotExist:
             messages.info(self.request, "You do not have an active order")
@@ -370,9 +365,6 @@ class PaymentView(View):
                         currency="usd",
                         source="tok_visa",
                     )
-            print('+++++++++++++++++++++++')
-            print('charge created')
-            print('+++++++++++++++++++++++')
             payment = Payment()
             payment.stripe_charge_id = charge['id']
             payment.user = self.request.user
@@ -391,32 +383,32 @@ class PaymentView(View):
             err = body.get('error', {})
             messages.warning(self.request, f"{err.get('message')}")
             return redirect("shop:shop")
-        # except stripe.error.RateLimitError as e:
-        #   # Too many requests made to the API too quickly
-        #   messages.warning(self.request, "RateLimitError")
-        #   return redirect("shop:shop")
-        # except stripe.error.InvalidRequestError as e:
-        #   # Invalid parameters were supplied to Stripe's API
-        #   messages.warning(self.request, "InvalidRequestError")
-        #   return redirect("shop:shop")
-        # except stripe.error.AuthenticationError as e:
-        #   # Authentication with Stripe's API failed
-        #   # (maybe you changed API keys recently)
-        #   messages.warning(self.request, "AuthenticationError")
-        #   return redirect("shop:shop")
-        # except stripe.error.APIConnectionError as e:
-        #   # Network communication with Stripe failed
-        #   messages.warning(self.request, "APIConnectionError")
-        #   return redirect("shop:shop")
-        # except stripe.error.StripeError as e:
-        #   # Display a very generic error to the user, and maybe send
-        #   # yourself an email
-        #   messages.warning(self.request, "StripeError")
-        #   return redirect("shop:shop")
-        # except Exception as e:
-        #   # Something else happened, completely unrelated to Stripe
-        #   messages.warning(self.request, "Something Went Wrong Please Try Again")
-        #   return redirect("shop:shop")
+        except stripe.error.RateLimitError as e:
+          # Too many requests made to the API too quickly
+          messages.warning(self.request, "RateLimitError")
+          return redirect("shop:shop")
+        except stripe.error.InvalidRequestError as e:
+          # Invalid parameters were supplied to Stripe's API
+          messages.warning(self.request, "InvalidRequestError")
+          return redirect("shop:shop")
+        except stripe.error.AuthenticationError as e:
+          # Authentication with Stripe's API failed
+          # (maybe you changed API keys recently)
+          messages.warning(self.request, "AuthenticationError")
+          return redirect("shop:shop")
+        except stripe.error.APIConnectionError as e:
+          # Network communication with Stripe failed
+          messages.warning(self.request, "APIConnectionError")
+          return redirect("shop:shop")
+        except stripe.error.StripeError as e:
+          # Display a very generic error to the user, and maybe send
+          # yourself an email
+          messages.warning(self.request, "StripeError")
+          return redirect("shop:shop")
+        except Exception as e:
+          # Something else happened, completely unrelated to Stripe
+          messages.warning(self.request, "Something Went Wrong Please Try Again")
+          return redirect("shop:shop")
 
 
 def get_coupon(request, code):
