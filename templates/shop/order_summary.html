@@ -83,7 +83,13 @@
               <div class="bg-light px-4 py-3">
                 <div class="row align-items-center text-center">
                   <div class="col-md-6 mb-3 mb-md-0 text-md-left"><a class="btn btn-link p-0 text-dark btn-sm" href="{%url 'shop:shop' %}"><i class="fas fa-long-arrow-alt-left mr-2"> </i>Continue shopping</a></div>
-                  <div class="col-md-6 text-md-right"><a class="btn btn-outline-dark btn-sm" href="{%url 'shop:checkout'%}">Procceed to checkout<i class="fas fa-long-arrow-alt-right ml-2"></i></a></div>
+                  <div class="col-md-6 text-md-right">
+                  {%if order.products.count > 0%}
+                    <a class="btn btn-outline-dark btn-sm" href="{%url 'shop:checkout'%}">Procceed to checkout<i class="fas fa-long-arrow-alt-right ml-2"></i></a>
+                  {%else%}
+                    <a class="btn disabled btn-outline-dark btn-sm" href="{%url 'shop:checkout'%}">Procceed to checkout<i class="fas fa-long-arrow-alt-right ml-2"></i></a>
+                  {%endif%}
+                  </div>
                 </div>
               </div>
             </div>

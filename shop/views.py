@@ -1,4 +1,6 @@
-from shop.models import Product, Category, Comment, OrderItem, Order, Address
+import stripe
+from django.conf import settings
+from shop.models import Product, Category, Comment, OrderItem, Order, Address, Payment
 from carts.models import Carts, CartsItem
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
@@ -10,6 +12,7 @@ from django.views.generic import CreateView, ListView, DetailView, DeleteView, U
 from django.urls import reverse_lazy, reverse
 from .forms import CheckoutForm
 
+stripe.api_key = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
 
 def index(request):
     count_items_in_cart = CartsItem.objects.all().count()
@@ -271,6 +274,7 @@ def remove_single_item_from_cart(request, pk):
                 cart_item.save()
             else:
                 cart.products.remove(cart_item)
+
                 cart_item.delete()
             cart.save()
             messages.info(request, "This item quantity was updated.")
@@ -306,6 +310,10 @@ class CheckoutView(View):
         try:
             order = Order.objects.get(user=self.request.user, ordered=False)
             if form.is_valid():
+
+                print( "-------------")
+                print("valid form")
+                print( "-------------")
                 shipping_address = form.cleaned_data.get("shipping_address")
                 shipping_address2 = form.cleaned_data.get("shipping_address2")
                 shipping_country = form.cleaned_data.get("shipping_country")
@@ -319,16 +327,91 @@ class CheckoutView(View):
                     zip = shipping_zip
                     )
                 address.save()
+                print( "-------------")
+                print("Saved Address: " +str(address))
+                print( "-------------")
                 order.shipping_address = address
                 order.save()
-                print('---------------------------')
-                print('address')
-                print(order.shipping_address)
-                print('---------------------------')
-                return redirect("shop:checkout")
+                print( "-------------")
+                print("order: "+str(order))
+                print( "-------------")
+                return redirect("shop:payment")
             else:
                 print("invalid Form")
                 return redirect("shop:checkout")
         except ObjectDoesNotExist:
             messages.info(self.request, "You do not have an active order")
             return redirect("shop:order_summary")
+
+
+class PaymentView(View):
+    def get(self, *args, **kwargs):
+        order = Order.objects.get(user=self.request.user, ordered=False)
+        if order.shipping_address:
+            return render(self.request, "shop/payment.html", {'order':order})
+        else:
+            messages.warning(
+                self.request, "You have not added a billing address")
+            return redirect("shop:checkout")
+
+    def post(self, *args, **kwargs):
+        order = Order.objects.get(user=self.request.user, ordered=False)
+        token = stripe.Token.create(card={ "number": "4242424242424242", "exp_month": 8, "exp_year": 2021, "cvc": "314",})
+        amount = int(order.get_total() * 100)
+        try:
+            print('+++++++++++++++++++++++')
+            print('charge creating')
+            print('+++++++++++++++++++++++')
+            print(token)
+            charge = stripe.Charge.create(
+                        amount=amount,  # cents
+                        currency="usd",
+                        source=token
+                    )
+            print('+++++++++++++++++++++++')
+            print('charge created')
+            print('+++++++++++++++++++++++')
+            payment = Payment()
+            payment.stripe_charge_id = charge['id']
+            payment.user = self.request.user
+            payment.amount = order.get_total()
+            payment.save()
+
+            order.ordered = True
+            order.payment = payment
+            order.save()
+            messages.success(self.request, "Your Order Was Successful")
+            return redirect("shop:shop")
+
+        except stripe.error.CardError as e:
+          # Since it's a decline, stripe.error.CardError will be caught
+            body = e.json_body
+            err = body.get('error', {})
+            messages.warning(self.request, f"{err.get('message')}")
+            return redirect("shop:shop")
+        except stripe.error.RateLimitError as e:
+          # Too many requests made to the API too quickly
+          messages.warning(self.request, "RateLimitError")
+          return redirect("shop:shop")
+        except stripe.error.InvalidRequestError as e:
+          # Invalid parameters were supplied to Stripe's API
+          messages.warning(self.request, "InvalidRequestError")
+          return redirect("shop:shop")
+        except stripe.error.AuthenticationError as e:
+          # Authentication with Stripe's API failed
+          # (maybe you changed API keys recently)
+          messages.warning(self.request, "AuthenticationError")
+          return redirect("shop:shop")
+        except stripe.error.APIConnectionError as e:
+          # Network communication with Stripe failed
+          messages.warning(self.request, "APIConnectionError")
+          return redirect("shop:shop")
+        except stripe.error.StripeError as e:
+          # Display a very generic error to the user, and maybe send
+          # yourself an email
+          messages.warning(self.request, "StripeError")
+          return redirect("shop:shop")
+        except Exception as e:
+          # Something else happened, completely unrelated to Stripe
+          messages.warning(self.request, "Something Went Wrong Please Try Again")
+          return redirect("shop:shop")

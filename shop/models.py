@@ -94,10 +94,11 @@ class Order(models.Model):
     ordered_date = models.DateTimeField()
     ordered = models.BooleanField(default=False)
     shipping_address = models.ForeignKey('Address', on_delete=models.SET_NULL, blank=True, null=True)
+    payment = models.ForeignKey('Payment', on_delete=models.SET_NULL, blank=True, null=True)
 
 
     def __str__(self):
-        return self.user.username
+        return str(self.id)
 
     def get_total(self):
         total = 0
@@ -132,3 +133,12 @@ class Address(models.Model):
     class Meta:
         verbose_name_plural = 'Addresses'
 
+
+class Payment(models.Model):
+    stripe_charge_id = models.CharField(max_length=50)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
+    amount = models.FloatField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.user.username
