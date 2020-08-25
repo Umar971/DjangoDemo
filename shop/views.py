@@ -7,6 +7,8 @@ from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils import timezone
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from shop.forms import AddProductForm, EditProductForm, CouponForm, PaymentForm
 from django.views.generic import CreateView, ListView, DetailView, DeleteView, UpdateView, View
 from django.urls import reverse_lazy, reverse
@@ -113,7 +115,7 @@ class OrderSummaryView(View):
             messages.warning(self.request, "You do not have an active order")
             return redirect("shop:shop")
 
-def OrderSummaryViewSession(request):
+def OrderSummaryViewSession(LoginRequiredMixin, request):
         try:
             cart = get_user_cart(request)
             object_cart = Carts.objects.get(id=cart.id)
@@ -127,42 +129,42 @@ def OrderSummaryViewSession(request):
             return redirect("shop:shop")
 
 
-def get_user_cart(request):
-    """Retrieves the shopping cart for the current user."""
-    cart_id = None
-    cart = None
-    # If the user is logged in, then grab the user's cart info.
-    cart_id = request.session.get('cart_id')
-    print(cart_id)
-    if not cart_id:
-        cart = Carts()
-        cart.save()
-        request.session['cart_id'] = cart.id
-        print("new cart")
-    else:
-        cart = Carts.objects.get(id=cart_id)
-        print("old cart")
-    return cart
+# def get_user_cart(request):
+#     """Retrieves the shopping cart for the current user."""
+#     cart_id = None
+#     cart = None
+#     # If the user is logged in, then grab the user's cart info.
+#     cart_id = request.session.get('cart_id')
+#     print(cart_id)
+#     if not cart_id:
+#         cart = Carts()
+#         cart.save()
+#         request.session['cart_id'] = cart.id
+#         print("new cart")
+#     else:
+#         cart = Carts.objects.get(id=cart_id)
+#         print("old cart")
+#     return cart
+# @login_required
+# def view_cart(request):
+#     cart = get_user_cart(request)
+#     cart_items = CartsItem.objects.filter(carts=cart)
+#     order_total = 0
+#     for item in cart_items:
+#         order_total += (item.product.price * item.quantity)
+#     return render(request, 'carts/view_cart.html',{'cart_items':cart_items})
 
-def view_cart(request):
-    cart = get_user_cart(request)
-    cart_items = CartsItem.objects.filter(carts=cart)
-    order_total = 0
-    for item in cart_items:
-        order_total += (item.product.price * item.quantity)
-    return render(request, 'carts/view_cart.html',{'cart_items':cart_items})
-
-def get_cart_count(request):
-    cart = get_user_cart(request)
-    total_count = 0
-    cart_items = CartsItem.objects.filter(carts=cart)
-    for item in cart_items:
-        total_count += item.quantity
-    return total_count
+# def get_cart_count(request):
+#     cart = get_user_cart(request)
+#     total_count = 0
+#     cart_items = CartsItem.objects.filter(carts=cart)
+#     for item in cart_items:
+#         total_count += item.quantity
+#     return total_count
 
 def update_cart_info(request):
     request.session['cart_count'] = get_cart_count(request)
-
+@login_required
 def add_to_cart(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.user.is_authenticated and not request.user.is_anonymous:
@@ -186,21 +188,22 @@ def add_to_cart(request, pk):
             order.products.add(order_item)
             messages.info(request, "This item was added to your cart.")
             return redirect("shop:order_summary")
-    else:
-        cart = get_user_cart(request)
-        object_cart = Carts.objects.get(id=cart.id)
-        if CartsItem.objects.filter(product__pk=product.pk).exists():
-            cart_item, created = CartsItem.objects.get_or_create(product=product)
-            cart_item.quantity += 1
-            cart_item.save()
-            messages.info(request, "This item quantity was updated.")
-            return render(request, 'carts/order_summary.html', {'object':object_cart})
-        else:
-            cart_item, created = CartsItem.objects.get_or_create(product=product)
-            cart.products.add(cart_item)
-            messages.info(request, "This item was added to your cart.")
-            return render(request, 'carts/order_summary.html', {'object':object_cart})
+    # else:
+    #     cart = get_user_cart(request)
+    #     object_cart = Carts.objects.get(id=cart.id)
+    #     if CartsItem.objects.filter(product__pk=product.pk).exists():
+    #         cart_item, created = CartsItem.objects.get_or_create(product=product)
+    #         cart_item.quantity += 1
+    #         cart_item.save()
+    #         messages.info(request, "This item quantity was updated.")
+    #         return render(request, 'carts/order_summary.html', {'object':object_cart})
+    #     else:
+    #         cart_item, created = CartsItem.objects.get_or_create(product=product)
+    #         cart.products.add(cart_item)
+    #         messages.info(request, "This item was added to your cart.")
+    #         return render(request, 'carts/order_summary.html', {'object':object_cart})
 
+@login_required
 def remove_from_cart(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.user.is_authenticated and not request.user.is_anonymous:
@@ -227,20 +230,22 @@ def remove_from_cart(request, pk):
         else:
             messages.info(request, "You do not have an active order")
             return redirect("shop:shop")
-    else:
-        cart = get_user_cart(request)
-        object_cart = Carts.objects.get(id=cart.id)
-        if CartsItem.objects.filter(product__pk=product.pk).exists():
-            cart_item = CartsItem.objects.get(product=product)
-            cart.products.remove(cart_item)
-            cart_item.delete()
-            cart.save()
-            messages.info(request, "This item was removed successfully.")
-            return render(request, 'carts/order_summary.html', {'object':object_cart})
-        else:
-            messages.info(request, "This item was not in your cart.")
-            return redirect("shop:detail_product", pk=pk)
+    # else:
+    #     cart = get_user_cart(request)
+    #     object_cart = Carts.objects.get(id=cart.id)
+    #     if CartsItem.objects.filter(product__pk=product.pk).exists():
+    #         cart_item = CartsItem.objects.get(product=product)
+    #         cart.products.remove(cart_item)
+    #         cart_item.delete()
+    #         cart.save()
+    #         messages.info(request, "This item was removed successfully.")
+    #         return render(request, 'carts/order_summary.html', {'object':object_cart})
+    #     else:
+    #         messages.info(request, "This item was not in your cart.")
+    #         return redirect("shop:detail_product", pk=pk)
 
+
+@login_required
 def remove_single_item_from_cart(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.user.is_authenticated and not request.user.is_anonymous:
@@ -270,30 +275,30 @@ def remove_single_item_from_cart(request, pk):
         else:
             messages.info(request, "You do not have an active order")
             return redirect("shop:shop")
-    else:
-        cart = get_user_cart(request)
-        object_cart = Carts.objects.get(id=cart.id)
-        if CartsItem.objects.filter(product__pk=product.pk).exists():
-            cart_item = CartsItem.objects.get(product=product)
-            if cart_item.quantity > 1:
-                cart_item.quantity -= 1
-                cart_item.save()
-            else:
-                cart.products.remove(cart_item)
+    # else:
+    #     cart = get_user_cart(request)
+    #     object_cart = Carts.objects.get(id=cart.id)
+    #     if CartsItem.objects.filter(product__pk=product.pk).exists():
+    #         cart_item = CartsItem.objects.get(product=product)
+    #         if cart_item.quantity > 1:
+    #             cart_item.quantity -= 1
+    #             cart_item.save()
+    #         else:
+    #             cart.products.remove(cart_item)
 
-                cart_item.delete()
-            cart.save()
-            messages.info(request, "This item quantity was updated.")
-            return render(request, 'carts/order_summary.html', {'object':object_cart})
-        else:
-            messages.info(request, "This item was not in your cart.")
-            return redirect("shop:detail_product", pk=pk)
+    #             cart_item.delete()
+    #         cart.save()
+    #         messages.info(request, "This item quantity was updated.")
+    #         return render(request, 'carts/order_summary.html', {'object':object_cart})
+    #     else:
+    #         messages.info(request, "This item was not in your cart.")
+    #         return redirect("shop:detail_product", pk=pk)
 
-
-def empty_cart(request):
-	Order.objects.filter(user=request.user, ordered=False).delete()
-	messages.info(request, "your cart is emptied")
-	return redirect("shop:order_summary")
+# @login_required
+# def empty_cart(request):
+# 	Order.objects.filter(user=request.user, ordered=False).delete()
+# 	messages.info(request, "your cart is emptied")
+# 	return redirect("shop:order_summary")
 
 
 class CheckoutView(View):

@@ -1,7 +1,7 @@
 {% extends 'shop/shopbase.html' %}
 {% block title %} Login Page {% endblock  %}
     {% block body %}
-    <div class="container">
+    <div class="container col-md-8">
         {%if not user.is_authenticated%}
 
             <h1>Login...</h1>
@@ -11,8 +11,8 @@
                 <form  method='POST'>
                     {% csrf_token %}
                     {{form.as_p}}
-                    <button type='submit' class='btn btn-secondary btn-sm'>Login</button>
-                    <a type='submit' class='btn btn-secondary btn-sm' href="{%url 'members:register'%}">Sign up</a>
+                    <button type='submit' class='btn btn-dark btn-sm'>Login</button>
+                    <a type='submit' class='btn btn-dark btn-sm' href="{%url 'members:register'%}">Sign up</a>
 
             </div>
         {%else%}

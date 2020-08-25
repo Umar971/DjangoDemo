@@ -123,7 +123,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
-
+LOGIN_REDIRECT_URL = 'shop:shop'
+LOGIN_URL = 'members:login'
 STATIC_URL = '/static/'
 # Add these new lines
 STATICFILES_DIRS = (
